@@ -1,0 +1,16 @@
+{
+  	"name": "HomeIoTHub",
+  	"version": "0.0.1",
+  	"description": "A Home IoT Hub",
+  	"author": "Richard Backhouse <richardabackhouse@gmail.com>",
+  	"license": "MIT",
+	"dependencies": {
+	    "connect": ">= 2.0.0",
+    	"serve-static": "^1.6.1",
+    	"ws": ">= 0.4",
+    	"noble": "^1.5.0",
+    	"crc": "^2.1.1",
+	    "node-ssdp": "2.8.0",
+	    "ip": ">= 1.1.3"
+  	}
+}

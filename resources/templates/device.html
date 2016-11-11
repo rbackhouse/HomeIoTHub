@@ -1,0 +1,31 @@
+<div data-role="content">
+	<% if (device.name) { %> 
+		<h3 id="nameid"><%= device.name %> : <%= device.id %></h3>
+	<% } else { %> 
+		<h3 id="nameid"><%= device.id %></h3>
+	<% } %> 
+	<div data-role="collapsible" data-collapsed="false" data-inset="false"> 
+		<h3>Data</h3> 
+		<textarea rows="30" cols="27" id="data" readonly></textarea>
+	</div>
+	<div data-role="collapsible" data-collapsed="true" data-inset="false"> 
+		<h3>Commands</h3> 
+		<ul id="cmdlist" data-role="listview" data-theme="g">
+		<% if (device.commands) { %> 
+			<% _.each(device.commands, function(cmd) { %>
+				<li data-icon="arrow-r">
+					<a id="<%= cmd.cmd %>">
+						<p style="white-space:normal"><%= cmd.label %></p>
+					</a>
+				</li> 
+			<% }); %>
+		<% } %> 
+		</ul>
+	</div>
+</div>
+<div data-id="thefooter "data-role="footer" data-position="fixed" class="ui-bar">
+	<div data-role="controlgroup" data-type="horizontal" data-mini="true">
+		<input id="connect" data-icon="action" value="Connect" type="button" data-mini="true">
+	</div>		
+</div>		
+

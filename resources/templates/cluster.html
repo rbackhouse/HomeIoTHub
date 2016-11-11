@@ -1,0 +1,9 @@
+<div data-role="content">
+	<ul id="nodelist" data-role="listview" data-theme="g" data-filter="true">
+	<% _.each(nodes, function(node) { %>
+		<li data-icon="arrow-r">
+			<p style="white-space:normal"><%= node.hostname %></p>
+		</li> 
+	<% }); %>
+    </ul>
+</div>

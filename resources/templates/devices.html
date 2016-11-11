@@ -1,0 +1,9 @@
+<div data-role="content">
+	<ul id="devicelist" data-role="listview" data-theme="g" data-filter="true">
+	<% _.each(devices, function(device) { %>
+		<li data-icon="arrow-r">
+			<a href="#device/<%= device.id %>"><p style="white-space:normal"><%= device.name %> [<%= device.id %>] <%= device.rssi %> <%= device.hostname %></p></a>
+		</li> 
+	<% }); %>
+    </ul>
+</div>
