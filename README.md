@@ -11,4 +11,4 @@ sudo node lib/HomeIoTHub.js
 
 #### Web UI access
 
-Point a browser at any of the nodes via http://<ip>:8080
+Point a browser at any of the nodes via http://[hostname]:8080
