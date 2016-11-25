@@ -1,0 +1,59 @@
+<script type="text/javascript">
+    RED.nodes.registerType('BLEDevice', {
+        category: 'advanced-function',
+        color:"GoldenRod",
+        defaults: {
+            name: {value:""},
+            uuid: {value:"",required:true}
+        },
+		inputs:1,
+        outputs:1,
+        icon: "bluetooth.png",
+        label: function() {
+        	if (this.uuid) {
+	            return this.name +":"+this.uuid;
+        	} else {
+        		return "BLEDevice";
+        	}
+        },
+        oneditprepare: function() {
+			$.ajax({
+				url: "../iot/devices",
+				type: "GET",
+				headers: { "Accept": "application/json" },
+				dataType: "json",
+				success: function(devices, textStatus, jqXHR) {
+					this.name = devices[0].name;
+					$("#node-input-name").val(this.name);
+					devices.forEach(function(device) {
+						$("#node-input-uuid")
+							.append($("<option></option>")
+                    		.attr("value",device.id)
+                    		.text(device.name+":"+device.id)); 
+					});
+					if (this.uuid) {
+						$("#node-input-uuid").val(this.uuid);
+					}				
+				}.bind(this),
+				error: function(jqXHR, textStatus, errorThrown) {}
+			});
+			$("#node-input-uuid").on("change",function() {
+				var optionName = $("#node-input-uuid option[value='"+$("#node-input-uuid").val()+"']").text();
+				this.name = optionName.substring(0, optionName.indexOf(":"));
+				$("#node-input-name").val(this.name);
+			}.bind(this));
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="BLEDevice">
+	<div class="form-row">
+		<label for="node-input-name"><i class="icon-bookmark"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-uuid"><i class="icon-bookmark"></i> UUID</label>
+        <select id="node-input-uuid">
+        </select>
+    </div>
+</script>
