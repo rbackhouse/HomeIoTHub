@@ -3,7 +3,7 @@ A node.js based Clustered IoT Hub geared toward home use.
 
 * Searches for Bluetooth LE devices that have plugins registered.
 * Cluster Nodes provide a single view of all devices found in the home.
-* Web UI provides access to devices to set schedules, links to other devices etc.
+* Embedded node-red used for UI
 
 #### Usage
 
@@ -15,6 +15,6 @@ Then to use this to start the Hub
 
 node lib/HomeIoTHub.js
 
-#### Web UI access
+#### node-red access
 
-Point a browser at any of the nodes via http://[hostname]:8080
+Point a browser at any of the nodes via http://[hostname]:8080/red
