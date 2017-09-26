@@ -1,0 +1,84 @@
+<script type="text/javascript">
+    RED.nodes.registerType('BLEDeviceCmd', {
+        category: 'advanced-function',
+        color:"GoldenRod",
+        defaults: {
+            devicetype: {value:"", required: true},
+            cmd: {value:"",required:true}
+        },
+		inputs:1,
+        outputs:1,
+        icon: "bluetooth.png",
+        label: function() {
+        	if (this.devicetype) {
+	            return this.devicetype +":"+this.cmd;
+        	} else {
+        		return "BLEDeviceCmd";
+        	}
+        },
+        oneditprepare: function() {
+			$.ajax({
+				url: "../iot/devicetypes",
+				type: "GET",
+				headers: { "Accept": "application/json" },
+				dataType: "json",
+				success: function(devicetypes, textStatus, jqXHR) {
+					this.devicetypes = devicetypes;
+					for (var type in devicetypes) {
+						if (this.devicetype === "") {
+							this.devicetype = type;
+						}	
+						$("#node-input-type")
+							.append($("<option></option>")
+                    		.attr("value",type)
+                    		.text(type));
+					}
+					$("#node-input-type").val(this.devicetype);
+					devicetypes[this.devicetype].forEach(function(cmd) {
+						if (this.cmd === "") {
+							this.cmd = cmd.cmd;
+						}
+						$("#node-input-cmd")
+							.append($("<option></option>")
+                    		.attr("value",cmd.cmd)
+                    		.text(cmd.label));
+					}.bind(this));
+					$("#node-input-cmd").val(this.cmd);
+					
+				}.bind(this),
+				error: function(jqXHR, textStatus, errorThrown) {}
+			});
+			$("#node-input-cmd").on("change",function() {
+ 				var optionCmd = $("#node-input-cmd option[value='"+$("#node-input-cmd").val()+"']").text();
+ 				if (optionCmd && optionCmd !== "") {
+ 					this.cmd = optionCmd;
+				}
+			}.bind(this));
+			$("#node-input-type").on("change",function() {
+ 				var optionType = $("#node-input-type option[value='"+$("#node-input-type").val()+"']").text();
+ 				if (optionType && optionType !== "") {
+ 					this.devicetype = optionType;
+					$("#node-input-cmd option").remove();
+					this.devicetypes[optionType].forEach(function(cmd) {
+						$("#node-input-cmd")
+							.append($("<option></option>")
+							.attr("value",cmd.cmd)
+							.text(cmd.label));
+					});
+				}	
+			}.bind(this));
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="BLEDeviceCmd">
+    <div class="form-row">
+        <label for="node-input-type"><i class="icon-bookmark"></i> Device Type</label>
+        <select id="node-input-type">
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-cmd"><i class="icon-bookmark"></i> Device Command</label>
+        <select id="node-input-cmd">
+        </select>
+    </div>
+</script>
