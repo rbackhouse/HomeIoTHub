@@ -9,11 +9,15 @@ A node.js based Clustered IoT Hub geared toward home use.
 
 First run this once to enable non-root access to the devices
 
+```
 sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
+```
 
 Then to use this to start the Hub
 
+```
 node lib/HomeIoTHub.js
+```
 
 #### node-red access
 
