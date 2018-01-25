@@ -38,30 +38,39 @@ class FlowerCare extends BLEDevice {
 	}
 	
 	getReadings() {
-		this.read(FIRMWARE_CHARACTERISTIC_UUID, function(err, data) {
-			this.emit('read', "firmware", {
-				batteryLevel: parseInt(data.toString('hex', 0, 1), 16),
-				firmwareVersion: data.toString('ascii', 2, data.length)
-			});
-		}.bind(this));
-		this.write(REALTIME_CHARACTERISTIC_UUID, REALTIME_META_VALUE, false, function() {
-			this.read(DATA_CHARACTERISTIC_UUID, function(err, data) {
+		this.write(REALTIME_CHARACTERISTIC_UUID, REALTIME_META_VALUE, false, () => {
+			this.read(DATA_CHARACTERISTIC_UUID, (err, data) => {
 				this.emit('read', "data", {
 					temperature: data.readUInt16LE(0) / 10,
 					lux: data.readUInt32LE(3),
 					moisture: data.readUInt16BE(6),
 					fertility: data.readUInt16LE(8)
 				});
-			}.bind(this));
+			});
 			
-		}.bind(this));
+		});
 	}
 	
-	commands() {
+	getFirmware() {
+		this.read(FIRMWARE_CHARACTERISTIC_UUID, (err, data) => {
+			this.emit('read', "firmware", {
+				batteryLevel: parseInt(data.toString('hex', 0, 1), 16),
+				firmwareVersion: data.toString('ascii', 2, data.length)
+			});
+		});
+	}
+	
+	static commands() {
 		return [
 			{
-				cmd: "getReadings", 
+				cmd: "getReadings",
+				readType: "data",
 				label: "Get Readings" 
+			},
+			{
+				cmd: "getFirmware", 
+				readType: "firmware",
+				label: "Get Fireware" 
 			}
 		];
 	}

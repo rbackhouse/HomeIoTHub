@@ -17,11 +17,12 @@
 module.exports = function(RED) {
 	function BLEDeviceCmd(config) {
         this.type = config.type;
-        this.cmd = config.cmd;
+        this.cmd = config.cmd.substring(0, config.cmd.indexOf(":"));
+        this.readType = config.cmd.substring(config.cmd.indexOf(":")+1);
         var node = this;
         RED.nodes.createNode(this, config);
         this.on('input', function(msg) {
-			node.send({payload: {cmd: node.cmd}});
+			node.send({payload: {cmd: node.cmd, readType: node.readType}});
         });
     }	
 	RED.nodes.registerType("BLEDeviceCmd", BLEDeviceCmd);

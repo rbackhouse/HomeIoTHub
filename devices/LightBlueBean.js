@@ -16,13 +16,13 @@
 */
 "use strict";
 
-var BLEDevice = require('../lib/BLEDevice');
-var crc = require('crc');
+const BLEDevice = require('../lib/BLEDevice');
+const crc = require('crc');
                     
-var SERIAL_UUID = 'a495ff10c5b14b44b5121370f02d74de';
-var BEAN_SERIAL_CHAR_UUID = 'a495ff11c5b14b44b5121370f02d74de';
+const SERIAL_UUID = 'a495ff10c5b14b44b5121370f02d74de';
+const BEAN_SERIAL_CHAR_UUID = 'a495ff11c5b14b44b5121370f02d74de';
 
-var commands = {
+const commands = {
     MSG_ID_SERIAL_DATA        : new Buffer([0x00, 0x00]),
     MSG_ID_BT_SET_ADV         : new Buffer([0x05, 0x00]),
     MSG_ID_BT_SET_CONN        : new Buffer([0x05, 0x02]),
@@ -49,8 +49,8 @@ var commands = {
     MSG_ID_DB_COUNTER         : new Buffer([0xFE, 0x01]),
 };
 
-var numSamples = 10;
-var insensitivity = 2;
+const numSamples = 10;
+const insensitivity = 2;
 
 class Bean extends BLEDevice {
 	constructor(peripheral) {
@@ -58,9 +58,9 @@ class Bean extends BLEDevice {
 		this.count = 0;
 		this.gst = new Buffer(0);
 	
-		this.on("data", function(uuid, data) {
+		this.on("data", (uuid, data) => {
 			this._onRead(data);
-		}.bind(this));
+		});
 	}
 
 	static is(peripheral) {
@@ -68,9 +68,9 @@ class Bean extends BLEDevice {
 	}
 
 	_onRead(gt) {
-		var start = (gt[0] & 0x80);
-		var messageCount = (gt[0] & 0x60);
-		var packetCount = (gt[0] & 0x1F);
+		let start = (gt[0] & 0x80);
+		let messageCount = (gt[0] & 0x60);
+		let packetCount = (gt[0] & 0x1F);
 
 		if (start) {
 			this.gst = new Buffer(0);
@@ -79,25 +79,25 @@ class Bean extends BLEDevice {
 		this.gst = Buffer.concat( [this.gst, gt.slice(1)] );
 
 		if (packetCount === 0) {
-			var length = this.gst[0];
+			let length = this.gst[0];
 
-			var crcString = crc.crc16ccitt(this.gst.slice(0,this.gst.length-2));
-			var crc16 = new Buffer(crcString, 'hex');
-			var valid = (crc16[0]===this.gst[this.gst.length-1] && crc16[1]===this.gst[this.gst.length-2]);
+			let crcString = crc.crc16ccitt(this.gst.slice(0,this.gst.length-2));
+			let crc16 = new Buffer(crcString, 'hex');
+			let valid = (crc16[0]===this.gst[this.gst.length-1] && crc16[1]===this.gst[this.gst.length-2]);
 
-			var command = ( (this.gst[2] << 8) + this.gst[3] ) & ~(0x80) ;
+			let command = ( (this.gst[2] << 8) + this.gst[3] ) & ~(0x80) ;
 
 			this.emit('raw', this.gst.slice(2,this.gst.length-2), length, valid, command);
 
 			if (valid) {
 				if (command === (commands.MSG_ID_CC_ACCEL_READ[0] << 8 ) + commands.MSG_ID_CC_ACCEL_READ[1]) {
-					var x = (((this.gst[5] << 24) >> 16) | this.gst[4]) * 0.00391;
-					var y = (((this.gst[7] << 24) >> 16) | this.gst[6]) * 0.00391;
-					var z = (((this.gst[9] << 24) >> 16) | this.gst[8]) * 0.00391;
+					let x = (((this.gst[5] << 24) >> 16) | this.gst[4]) * 0.00391;
+					let y = (((this.gst[7] << 24) >> 16) | this.gst[6]) * 0.00391;
+					let z = (((this.gst[9] << 24) >> 16) | this.gst[8]) * 0.00391;
 
-					var avX = Math.abs(this.totalX / numSamples);
-					var avY = Math.abs(this.totalY / numSamples);
-					var avZ = Math.abs(this.totalZ / numSamples);
+					let avX = Math.abs(this.totalX / numSamples);
+					let avY = Math.abs(this.totalY / numSamples);
+					let avZ = Math.abs(this.totalZ / numSamples);
 
 					this.totalX -= this.samplesX[this.index];
 					this.totalY -= this.samplesY[this.index];
@@ -139,18 +139,18 @@ class Bean extends BLEDevice {
 	}
 
 	send(cmdBuffer, payloadBuffer, done) {
-		var sizeBuffer = new Buffer(2);
+		let sizeBuffer = new Buffer(2);
 		sizeBuffer.writeUInt8(cmdBuffer.length + payloadBuffer.length,0);
 		sizeBuffer.writeUInt8(0,1);
 
-		var gstBuffer = Buffer.concat([sizeBuffer,cmdBuffer,payloadBuffer]);
+		let gstBuffer = Buffer.concat([sizeBuffer,cmdBuffer,payloadBuffer]);
 
-		var crcString = crc.crc16ccitt(gstBuffer);
-		var crc16Buffer = new Buffer(crcString, 'hex');
+		let crcString = crc.crc16ccitt(gstBuffer);
+		let crc16Buffer = new Buffer(crcString, 'hex');
 
-		var gattBuffer = new Buffer(1 + gstBuffer.length + crc16Buffer.length);
+		let gattBuffer = new Buffer(1 + gstBuffer.length + crc16Buffer.length);
 
-		var header = (((this.count++ * 0x20) | 0x80) & 0xff);
+		let header = (((this.count++ * 0x20) | 0x80) & 0xff);
 		gattBuffer[0]=header;
 
 		gstBuffer.copy(gattBuffer,1,0);
@@ -191,10 +191,10 @@ class Bean extends BLEDevice {
 			this.totalZ = 0;
 			this.index = 0;
 	
-			this.intervalId = setInterval(function() {
-				this.requestAccell(function() {});
-				this.requestTemp(function() {});
-			}.bind(this), 20000);
+			this.intervalId = setInterval(() => {
+				this.requestAccell(() => {});
+				this.requestTemp(() => {});
+			}, 20000);
 		}
 		done();
 	}
@@ -207,14 +207,16 @@ class Bean extends BLEDevice {
 		done();
 	}
 
-	commands() {
+	static commands() {
 		return [
 			{
 				cmd: "requestAccel",
+				readType: "movement",
 				label: "Request Acceleration" 
 			},
 			{
 				cmd: "requestTemp", 
+				readType: "temp",
 				label: "Request Temperature" 
 			},	
 			{

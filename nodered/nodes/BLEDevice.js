@@ -21,11 +21,14 @@ module.exports = function(RED) {
         RED.nodes.createNode(this, config);
         this.name = config.name;
         this.uuid = config.uuid;
+        this.readType;
         var node = this;
-
+		var theDevice;
+		var cmds = [];
+		
 		BLEManager.waitFor(node.uuid, function(device) {
-	        node.log(node.name+":"+node.uuid+" created");
-			var cmds = [];
+			theDevice = device;
+	        node.log(node.name+":"+node.uuid+" created ");
 			device.on("connected", function() {
 				node.log(device.name+":"+device.id+" connected");
 				node.status({fill:"red",shape:"ring",text:"connected"});
@@ -40,27 +43,41 @@ module.exports = function(RED) {
 				node.status({fill:"red",shape:"dot",text:"disconnected"});
 			});
 			device.on("read", function(type, data) {
-				node.log("read type : "+type+" data : "+JSON.stringify(data)+" from "+device.name+":"+device.id);
-				var readMsg = {
-					id: device.id,
-					name: device.name,
-					type: type,
-					data: data
-				};
-				node.send({payload: readMsg});
-			});
-			this.on('input', function(msg) {
-				node.log("input with msg : "+JSON.stringify(msg)+" on "+device.name+":"+device.id);
-				cmds.push(msg.payload.cmd);
-				BLEManager.connectToDevice(device.id);
-			});
-			this.on('close', function() {
-				node.log(node.name+":"+node.uuid+" closed");
-				if (device) {
-					BLEManager.disconnectFromDevice(device.id);
+				if (node.readType === type) {
+					node.log("read type : "+type+" data : "+JSON.stringify(data)+" from "+device.name+":"+device.id);
+					var readMsg = {
+						id: device.id,
+						name: device.name,
+						type: type,
+						data: data
+					};
+					node.send({payload: readMsg});
 				}
 			});
+			device.on("error", function(err) {
+				node.log("error on "+device.name+":"+device.id+" : "+err);
+			});
+			
 		}.bind(this));	
+		this.on('input', function(msg) {
+			if (theDevice) {
+				node.readType = msg.payload.readType;
+				node.log("input with msg : "+JSON.stringify(msg)+" on "+theDevice.name+":"+theDevice.id);
+				if (theDevice.isConnected()) {
+					node.log("sending cmd : "+msg.payload.cmd+" to "+theDevice.name+":"+theDevice.id);
+					BLEManager.sendCommand(theDevice.id, msg.payload.cmd, function() {});
+				} else {
+					cmds.push(msg.payload.cmd);
+					BLEManager.connectToDevice(theDevice.id);
+				}	
+			}	
+		});
+		this.on('close', function() {
+			node.log(node.name+":"+node.uuid+" closed");
+			if (theDevice) {
+				BLEManager.disconnectFromDevice(theDevice.id);
+			}
+		});
     }	
 	RED.nodes.registerType("BLEDevice", BLEDevice);
 }

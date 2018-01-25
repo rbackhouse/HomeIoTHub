@@ -16,23 +16,23 @@
 */
 "use strict";
 
-var BLEDevice = require('../lib/BLEDevice');
+const BLEDevice = require('../lib/BLEDevice');
 
-var SERVICE_UUID = 'fff0';
-var CHAR_UUID = 'fff3';
-var NOTIFY_UUID = 'fff4';
+const SERVICE_UUID = 'fff0';
+const CHAR_UUID = 'fff3';
+const NOTIFY_UUID = 'fff4';
 
-var on = [0x0F, 0x06, 0x03, 0x00, 0x01, 0x00, 0x00, 0x05, 0xFF, 0xFF];
-var off = [0x0F, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x04, 0xFF, 0xFF];
-var cmd1 = [0x0f, 0x05, 0x04, 0x00, 0x00, 0x00, 0x05, 0xff, 0xff];
-var cmd2 = [0x0f, 0x05, 0x10, 0x00, 0x00, 0x00, 0x11, 0xff, 0xff];
+const on = [0x0F, 0x06, 0x03, 0x00, 0x01, 0x00, 0x00, 0x05, 0xFF, 0xFF];
+const off = [0x0F, 0x06, 0x03, 0x00, 0x00, 0x00, 0x00, 0x04, 0xFF, 0xFF];
+const getPower = [0x0f, 0x05, 0x04, 0x00, 0x00, 0x00, 0x05, 0xff, 0xff];
+const cmd2 = [0x0f, 0x05, 0x10, 0x00, 0x00, 0x00, 0x11, 0xff, 0xff];
 
 class IQPlug extends BLEDevice {
 	constructor(peripheral) {
 		super(peripheral, [SERVICE_UUID], [CHAR_UUID, NOTIFY_UUID], [NOTIFY_UUID]);  
-		this.on("data", function(uuid, data) {
+		this.on("data", (uuid, data) => {
 			this._onRead(uuid, data);
-		}.bind(this));
+		});
 	}
 	
 	static is(peripheral) {
@@ -40,8 +40,8 @@ class IQPlug extends BLEDevice {
 	}
 
 	_onRead(uuid, data) {
-		var b1 = data[8];
-		var b2 = data[9];
+		let b1 = data[8];
+		let b2 = data[9];
 		this.emit('read', "iqplug", {watts: b1+"."+b2});
 	}
 
@@ -53,15 +53,15 @@ class IQPlug extends BLEDevice {
 		this.write(CHAR_UUID, new Buffer(new Uint8Array(off)), true, done);
 	}
 
-	cmd1(done) {
-		this.write(CHAR_UUID, new Buffer(new Uint8Array(cmd1)), true, done);
+	getPower(done) {
+		this.write(CHAR_UUID, new Buffer(new Uint8Array(getPower)), true, done);
 	}
 
-	cmd2(done) {
-		this.write(CHAR_UUID, new Buffer(new Uint8Array(cmd2)), true, done);
+	test1(done) {
+		this.write(CHAR_UUID, new Buffer(new Uint8Array(getPower)), true, done);
 	}
 
-	commands() {
+	static commands() {
 		return [
 			{
 				cmd: "turnOn",
@@ -72,12 +72,13 @@ class IQPlug extends BLEDevice {
 				label: "Turn Off"
 			},
 			{
-				cmd: "cmd1",
-				label: "Test Cmd 1"
+				cmd: "getPower",
+				readType: "iqplug",
+				label: "get Power Usage"
 			},
 			{
-				cmd: "cmd2",
-				label: "Test Cmd 2"
+				cmd: "test1",
+				label: "test1"
 			}
 		];
 	}

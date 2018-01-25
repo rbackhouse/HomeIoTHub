@@ -36,11 +36,11 @@
 					$("#node-input-type").val(this.devicetype);
 					devicetypes[this.devicetype].forEach(function(cmd) {
 						if (this.cmd === "") {
-							this.cmd = cmd.cmd;
+							this.cmd = cmd.cmd+":"+cmd.readType;
 						}
 						$("#node-input-cmd")
 							.append($("<option></option>")
-                    		.attr("value",cmd.cmd)
+                    		.attr("value",cmd.cmd+":"+cmd.readType)
                     		.text(cmd.label));
 					}.bind(this));
 					$("#node-input-cmd").val(this.cmd);
@@ -62,7 +62,7 @@
 					this.devicetypes[optionType].forEach(function(cmd) {
 						$("#node-input-cmd")
 							.append($("<option></option>")
-							.attr("value",cmd.cmd)
+							.attr("value",cmd.cmd+":"+cmd.readType)
 							.text(cmd.label));
 					});
 				}	
